@@ -17,7 +17,7 @@ parser.add_argument("--peroid_start",
                     dest='period_start', help="Time when period start in format <2017-01-12T00:00:00>")
 parser.add_argument("--period_end",
                     dest='period_end', help="Time when period end in format <2017-01-13T00:00:00>")
-parser.add_argument("--project-all", default=false, action="store_true",
+parser.add_argument("--project-all", default=False, action="store_true",
                     dest='project_all', help="Statistics of all cloud")
 args = parser.parse_args()
 
@@ -31,7 +31,7 @@ start_time = args.period_start
 from keystoneauth1.identity import v3
 from keystoneauth1 import session
 from keystoneclient.v3 import client
-auth = v3.Password(auth_url=os_auth_url, username=username,
+auth = v3.Password(auth_url=os_auth_url+"v3", username=username,
                    password=password, project_name=os.environ.get('OS_PROJECT_NAME', 'admin'),
                    user_domain_id="default", project_domain_id="default")
 sess = session.Session(auth=auth)
@@ -60,18 +60,19 @@ def billing(project_id):
     if not os.path.exists(dir_path):
         os.makedirs(dir_path)
 
-    project_name = keystone.projects.get(project_id)
+    project_name = keystone.projects.get(project_id).name
     result = project_name+'\n'
     result += "VCPU per hour: "+str(vcpu_hour)+"\n"+"RAM per hour(Gb): "+str(ram_hour_gb)+"\n"+\
               "Disk per hour(Gb): "+str(disk_hour)+"\n\n"
     return result
 
 # If u want statistics of all projects
-if args.project_all == true:
+if args.project_all == True:
     project_list = keystone.projects.list()
     for project in project_list:
-        with open(dir_path+'ALL-'+str(end_time), 'w') as f:
-            f.write(billing(project.id))
+        if project.name != 'services':
+            with open(dir_path+'ALL-'+str(end_time), 'a') as f:
+                f.write(billing(project.id))
 else:
     with open(dir_path+args.project+'-'+str(end_time), 'w') as f:
         f.write(billing(args.project))
