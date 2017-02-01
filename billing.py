@@ -24,7 +24,7 @@ args = parser.parse_args()
 username = args.username
 password = args.password
 os_auth_url = args.os_auth_url
-
+project_name = os.environ.get('OS_PROJECT_NAME', 'admin')
 end_time = args.period_end
 start_time = args.period_start
 
@@ -32,20 +32,20 @@ from keystoneauth1.identity import v3
 from keystoneauth1 import session
 from keystoneclient.v3 import client
 auth = v3.Password(auth_url=os_auth_url+"v3", username=username,
-                   password=password, project_name=os.environ.get('OS_PROJECT_NAME', 'admin'),
+                   password=password, project_name=project_name,
                    user_domain_id="default", project_domain_id="default")
 sess = session.Session(auth=auth)
 keystone = client.Client(session=sess)
+cclient = ceilometerclient.client.get_client(2, username=username, password=password, project_name=project_name,
+                                             os_auth_url=os_auth_url)
 
 def estimation(meter):
     result = reduce(lambda a,b: a+b,map(lambda x: x.max*x.duration, meter))/3600
     return result
 
 def billing(project_id):
-    cclient = ceilometerclient.client.get_client(2, username=username, password=password, tenant_id=project_id,
-                                             os_auth_url=os_auth_url)
     query = [dict(field='metadata.state',op='eq',value='active'), dict(field='timestamp',op='gt',value=start_time),
-             dict(field="timestamp",op='lt',value=end_time)]
+             dict(field="timestamp",op='lt',value=end_time), dict(field='project',op='eq',value=project_id)]
 
     vcpus = cclient.statistics.list('vcpus', q=query, period=86400, groupby='resource_id')
     rams = cclient.statistics.list('memory', q=query, period=86400, groupby='resource_id')
