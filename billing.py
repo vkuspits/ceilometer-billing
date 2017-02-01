@@ -6,7 +6,7 @@ import os
 
 dir_path = os.environ['PWD']+"/billing/"
 parser = argparse.ArgumentParser()
-parser.add_argument("project", help="write id of project, which statistics you want to get")
+parser.add_argument("--project", dest='project', help="write id of project, which statistics you want to get")
 parser.add_argument("--username", default=os.environ.get('OS_USERNAME', 'admin'),
                     dest='username', help="name of the user")
 parser.add_argument("--password", default=os.environ.get('OS_PASSWORD', 'admin'),
