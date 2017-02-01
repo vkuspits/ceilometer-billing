@@ -61,18 +61,17 @@ def billing(project_id):
         os.makedirs(dir_path)
 
     project_name = keystone.projects.get(project_id)
-    with open(dir_path+project_name+'-'+str(end_time), 'w') as f:
-        f.write(project_name+'\n')
-        f.write("VCPU per hour: "+str(vcpu_hour)+"\n")
-        f.write("RAM per hour(Gb): "+str(ram_hour_gb)+"\n")
-        f.write("Disk per hour(Gb): "+str(disk_hour)+"\n")
-    f.close()
-    return
+    result = project_name+'\n'
+    result += "VCPU per hour: "+str(vcpu_hour)+"\n"+"RAM per hour(Gb): "+str(ram_hour_gb)+"\n"+\
+              "Disk per hour(Gb): "+str(disk_hour)+"\n\n"
+    return result
 
 # If u want statistics of all projects
 if args.project_all == true:
     project_list = keystone.projects.list()
     for project in project_list:
-        billing(project.id)
+        with open(dir_path+'ALL-'+str(end_time), 'w') as f:
+            f.write(billing(project.id))
 else:
-    billing(args.project)
+    with open(dir_path+args.project+'-'+str(end_time), 'w') as f:
+        f.write(billing(args.project))
