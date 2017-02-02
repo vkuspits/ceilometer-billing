@@ -6,25 +6,34 @@ import os
 
 dir_path = os.environ['PWD']+"/billing/"
 parser = argparse.ArgumentParser()
-parser.add_argument("--project", dest='project', help="write id of project, which statistics you want to get")
+parser.add_argument("--project_id", dest='project_id', help="write id of project, which statistics you want to get")
+parser.add_argument("--project-all", default=False, action="store_true",
+                    dest='project_all', help="Statistics of all cloud")
 parser.add_argument("--username", default=os.environ.get('OS_USERNAME', 'admin'),
                     dest='username', help="name of the user")
 parser.add_argument("--password", default=os.environ.get('OS_PASSWORD', 'admin'),
                     dest='password', help="password of the user")
 parser.add_argument("--os_auth_url", default=os.environ.get('OS_AUTH_URL','http://10.21.2.3:5000/'),
                     dest='os_auth_url', help="write os_auth_url in format <http://hostname:5000/>")
+parser.add_argument("--admin_project_name", default=os.environ.get('OS_PROJECT_NAME', 'admin'),
+                    dest='admin_project_name', help="Specify name of admin project for auth")
+parser.add_argument("--user_domain_id", default=os.environ.get('OS_DEFAULT_DOMAIN', 'default'),
+                    dest='user_domain_id', help="Specify user domain id")
+parser.add_argument("--project_domain_id", default=os.environ.get('OS_DEFAULT_DOMAIN', 'default'),
+                    dest='project_domain_id', help="Specify project domain id")
 parser.add_argument("--peroid_start",
                     dest='period_start', help="Time when period start in format <2017-01-12T00:00:00>")
 parser.add_argument("--period_end",
                     dest='period_end', help="Time when period end in format <2017-01-13T00:00:00>")
-parser.add_argument("--project-all", default=False, action="store_true",
-                    dest='project_all', help="Statistics of all cloud")
+
 args = parser.parse_args()
 
 username = args.username
 password = args.password
 os_auth_url = args.os_auth_url
-project_name = os.environ.get('OS_PROJECT_NAME', 'admin')
+admin_project_name = args.admin_project_name
+user_domain_id = args.user_domain_id
+project_domain_id = args.project_domain_id
 end_time = args.period_end
 start_time = args.period_start
 
@@ -32,11 +41,11 @@ from keystoneauth1.identity import v3
 from keystoneauth1 import session
 from keystoneclient.v3 import client
 auth = v3.Password(auth_url=os_auth_url+"v3", username=username,
-                   password=password, project_name=project_name,
+                   password=password, project_name=admin_project_name,
                    user_domain_id="default", project_domain_id="default")
 sess = session.Session(auth=auth)
 keystone = client.Client(session=sess)
-cclient = ceilometerclient.client.get_client(2, username=username, password=password, project_name=project_name,
+cclient = ceilometerclient.client.get_client(2, username=username, password=password, project_name=admin_project_name,
                                              os_auth_url=os_auth_url)
 
 def estimation(meter):
@@ -75,4 +84,4 @@ if args.project_all == True:
                 f.write(billing(project.id))
 else:
     with open(dir_path+args.project+'-'+str(end_time), 'w') as f:
-        f.write(billing(args.project))
+        f.write(billing(args.project_id))
