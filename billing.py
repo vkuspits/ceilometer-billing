@@ -58,21 +58,22 @@ def billing(project_id):
 
     vcpus = cclient.statistics.list('vcpus', q=query, period=86400, groupby='resource_id')
     rams = cclient.statistics.list('memory', q=query, period=86400, groupby='resource_id')
-    disks = cclient.statistics.list('disk.root.size', q=query, period=86400, groupby='resource_id')
+    disks_root = cclient.statistics.list('disk.root.size', q=query, period=86400, groupby='resource_id')
+    disks_ephemeral = cclient.statistics.list('disk.ephemeral.size', q=query, period=86400, groupby='resource_id')
 
     vcpu_hour = estimation(vcpus)
 
     ram_hour_gb = estimation(rams)/1024 # By default ceilometer return memory meter in Mb
 
-    disk_hour = estimation(disks)
+    disk_hour = estimation(disks_root) + estimation(disks_ephemeral)
 
     if not os.path.exists(dir_path):
         os.makedirs(dir_path)
 
     project_name = keystone.projects.get(project_id).name
     result = project_name+'\n'
-    result += "VCPU per hour: "+str(vcpu_hour)+"\n"+"RAM per hour(Gb): "+str(ram_hour_gb)+"\n"+\
-              "Disk per hour(Gb): "+str(disk_hour)+"\n\n"
+    result += "VCPU hours: "+str(vcpu_hour)+"\n"+"RAM hours(Gb): "+str(ram_hour_gb)+"\n"+\
+              "Disk hours(Gb): "+str(disk_hour)+"\n\n"
     return result
 
 # If u want statistics of all projects
@@ -83,5 +84,5 @@ if args.project_all == True:
             with open(dir_path+'ALL-'+str(end_time), 'a') as f:
                 f.write(billing(project.id))
 else:
-    with open(dir_path+args.project+'-'+str(end_time), 'w') as f:
+    with open(dir_path+args.project_id+'-'+str(end_time), 'w') as f:
         f.write(billing(args.project_id))
