@@ -21,7 +21,7 @@ parser.add_argument("--user_domain_id", default=os.environ.get('OS_DEFAULT_DOMAI
                     dest='user_domain_id', help="Specify user domain id")
 parser.add_argument("--project_domain_id", default=os.environ.get('OS_DEFAULT_DOMAIN', 'default'),
                     dest='project_domain_id', help="Specify project domain id")
-parser.add_argument("--peroid_start",
+parser.add_argument("--period_start",
                     dest='period_start', help="Time when period start in format <2017-01-12T00:00:00>")
 parser.add_argument("--period_end",
                     dest='period_end', help="Time when period end in format <2017-01-13T00:00:00>")
@@ -48,6 +48,9 @@ keystone = client.Client(session=sess)
 cclient = ceilometerclient.client.get_client(2, username=username, password=password, project_name=admin_project_name,
                                              os_auth_url=os_auth_url)
 
+if not os.path.exists(dir_path):
+    os.makedirs(dir_path)
+
 def estimation(meter):
     result = reduce(lambda a,b: a+b,map(lambda x: x.max*x.duration, meter))/3600
     return result
@@ -66,9 +69,6 @@ def billing(project_id):
     ram_hour_gb = estimation(rams)/1024 # By default ceilometer return memory meter in Mb
 
     disk_hour = estimation(disks_root) + estimation(disks_ephemeral)
-
-    if not os.path.exists(dir_path):
-        os.makedirs(dir_path)
 
     project_name = keystone.projects.get(project_id).name
     result = project_name+'\n'
