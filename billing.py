@@ -58,18 +58,18 @@ def volumes(project_id):
              dict(field='meter',op='eq',value='volume.size')])
 
     for sample in volume_samples:
-        if sample.metadata.status == u'deleting':
+        if sample.metadata['status'] == u'deleting':
             time = datetime.datetime.strptime(sample.timestamp, '%Y-%m-%dT%H:%M:%S.%f') - datetime.datetime.strptime(
-                sample.metadata.created_at, '%Y-%m-%dT%H:%M:%S.%f')
+                sample.metadata['created_at'], '%Y-%m-%dT%H:%M:%S.%f')
             volumes_hours += sample.size * time.total_seconds() / 3600
             for delsample in volume_samples:
                 if sample.resource_id == delsample.resource_id:
                     volume_samples.remove(delsample)
 
     for sample in volume_samples:
-        if sample.metadata.status == u'available':
+        if sample.metadata['status'] == u'available':
             time = datetime.datetime.now() - datetime.datetime.strptime(
-                sample.metadata.created_at, '%Y-%m-%dT%H:%M:%S.%f')
+                sample.metadata['created_at'], '%Y-%m-%dT%H:%M:%S.%f')
             volumes_hours += sample.size * time.total_seconds() / 3600
             for delsample in volume_samples:
                 if sample.resource_id == delsample.resource_id:
