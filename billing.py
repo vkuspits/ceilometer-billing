@@ -55,22 +55,24 @@ if not os.path.exists(dir_path):
 def volumes(project_id):
     volumes_hours = 0
     volume_samples = cclient.new_samples.list(q=[dict(field='project',op='eq',value=project_id),
-             dict(field='meter',op='eq',value='volume.size')])
+                                                 dict(field='timestamp',op='gt',value=start_time),
+                                                 dict(field="timestamp",op='lt',value=end_time),
+                                                 dict(field='meter',op='eq',value='volume.size')])
 
     for sample in volume_samples:
-        if sample.metadata['status'] == u'deleting':
+        if sample.metadata.get('status') == u'deleting':
             time = datetime.datetime.strptime(sample.timestamp.split('+')[0],
                                               '%Y-%m-%dT%H:%M:%S.%f') - datetime.datetime.strptime(
-                sample.metadata['created_at'].split('+')[0], '%Y-%m-%dT%H:%M:%S.%f')
-            volumes_hours += float(sample.metadata['size']) * time.total_seconds() / 3600
+                sample.metadata.get('created_at').split('+')[0], '%Y-%m-%dT%H:%M:%S.%f')
+            volumes_hours += float(sample.metadata.get('size')) * time.total_seconds() / 3600
             for delsample in volume_samples:
                 if sample.resource_id == delsample.resource_id:
                     volume_samples.remove(delsample)
 
     for sample in volume_samples:
-        if sample.metadata['status'] == u'available':
-            time = datetime.datetime.now() - datetime.datetime.strptime(
-                sample.metadata['created_at'].split('+')[0], '%Y-%m-%dT%H:%M:%S.%f')
+        if sample.metadata.get('status') == u'available':
+            time = datetime.datetime.strptime(end_time.split('+')[0], '%Y-%m-%dT%H:%M:%S.%f') -\
+                   datetime.datetime.strptime(sample.metadata.get('created_at').split('+')[0], '%Y-%m-%dT%H:%M:%S.%f')
             volumes_hours += float(sample.metadata['size']) * time.total_seconds() / 3600
             for delsample in volume_samples:
                 if sample.resource_id == delsample.resource_id:
