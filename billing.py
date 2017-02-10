@@ -61,9 +61,8 @@ def volumes(project_id):
 
     for sample in volume_samples:
         if sample.metadata.get('status') == u'deleting':
-            time = datetime.datetime.strptime(sample.timestamp.split('+')[0],
-                                              '%Y-%m-%dT%H:%M:%S.%f') - datetime.datetime.strptime(
-                sample.metadata.get('created_at').split('+')[0], '%Y-%m-%dT%H:%M:%S.%f')
+            time = datetime.datetime.strptime(sample.timestamp.split('+')[0], '%Y-%m-%dT%H:%M:%S.%f') -\
+                   datetime.datetime.strptime(sample.metadata.get('created_at').split('+')[0], '%Y-%m-%dT%H:%M:%S.%f')
             volumes_hours += float(sample.metadata.get('size')) * time.total_seconds() / 3600
             for delsample in volume_samples:
                 if sample.resource_id == delsample.resource_id:
@@ -79,7 +78,6 @@ def volumes(project_id):
                     volume_samples.remove(delsample)
 
     return volumes_hours
-
 
 def estimation(meter):
     result = reduce(lambda a,b: a+b,map(lambda x: x.max*x.duration, meter))/3600
