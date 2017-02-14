@@ -70,7 +70,7 @@ def volumes(project_id):
 
     for sample in volume_samples:
         if sample.metadata.get('status') == u'available':
-            time = datetime.datetime.strptime(end_time.split('+')[0], '%Y-%m-%dT%H:%M:%S.%f') -\
+            time = datetime.datetime.strptime(end_time, '%Y-%m-%dT%H:%M:%S') -\
                    datetime.datetime.strptime(sample.metadata.get('created_at').split('+')[0], '%Y-%m-%dT%H:%M:%S.%f')
             volumes_hours += float(sample.metadata['size']) * time.total_seconds() / 3600
             for delsample in volume_samples:
