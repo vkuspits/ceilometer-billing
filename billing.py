@@ -80,7 +80,13 @@ def volumes(project_id):
     return volumes_hours
 
 def estimation(meter):
-    result = reduce(lambda a,b: a+b,map(lambda x: x.max*x.duration, meter))/3600
+    if meter:
+        # sometimes ceilometer may output statistics with duration=None
+        # we'll have to discard these
+        actual_meters = filter(lambda m: m.duration is not None, meter)
+        result = reduce(lambda a,b: a+b,map(lambda x: x.max*x.duration, actual_meters))/3600
+    else:
+        result = 0
     return result
 
 def billing(project_id):
