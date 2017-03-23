@@ -89,7 +89,7 @@ def estimation(meter):
         result = 0
     return result
 
-def billing(project_id):
+def billing(project_id, project_name=None):
     query = [dict(field='metadata.state',op='eq',value='active'), dict(field='timestamp',op='gt',value=start_time),
              dict(field="timestamp",op='lt',value=end_time), dict(field='project',op='eq',value=project_id)]
 
@@ -106,8 +106,11 @@ def billing(project_id):
 
     volume_hour = volumes(project_id)
 
-    project_name = keystone.projects.get(project_id).name
-    result = project_name+'\n'
+    if project_name:
+        result = project_name+'\n'
+    else:
+        result = project_id+'\n'
+
     result += "VCPU hours: "+str(vcpu_hour)+"\n"+"RAM hours(Gb): "+str(ram_hour_gb)+"\n"+\
               "Disk hours(Gb): "+str(disk_hour)+"\n"+"Cinder volumes hours: "+ str(volume_hour)+"\n\n"
     return result
@@ -118,7 +121,7 @@ if args.project_all == True:
     for project in project_list:
         if project.name != 'services':
             with open(dir_path+'ALL-'+str(end_time), 'a') as f:
-                f.write(billing(project.id))
+                f.write(billing(project.id, project.name))
 else:
     with open(dir_path+args.project_id+'-'+str(end_time), 'w') as f:
         f.write(billing(args.project_id))
