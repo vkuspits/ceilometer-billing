@@ -43,7 +43,7 @@ from keystoneauth1 import session
 from keystoneclient.v3 import client
 auth = v3.Password(auth_url=os_auth_url+"v3", username=username,
                    password=password, project_name=admin_project_name,
-                   user_domain_id="default", project_domain_id="default")
+                   user_domain_id=user_domain_id, project_domain_id=project_domain_id)
 sess = session.Session(auth=auth)
 keystone = client.Client(session=sess)
 cclient = ceilometerclient.client.get_client(2, username=username, password=password, project_name=admin_project_name,
